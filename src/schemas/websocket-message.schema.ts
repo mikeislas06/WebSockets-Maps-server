@@ -46,11 +46,6 @@ export type ClientMovedPayload = Extract<
   { type: 'CLIENT_MOVED' }
 >['payload'];
 
-export type ClientLeftPayload = Extract<
-  MessageParsed,
-  { type: 'CLIENT_LEFT' }
->['payload'];
-
 export type GetClientsPayload = Extract<
   MessageParsed,
   { type: 'GET_CLIENTS' }

@@ -1,6 +1,5 @@
 import {
   messageSchema,
-  type ClientLeftPayload,
   type ClientMovedPayload,
   type ClientRegisteredPayload,
 } from '../schemas/websocket-message.schema';
@@ -29,7 +28,7 @@ const handleGetClients = (): HandlerResult => {
   }
 }
 
-const handleClientRegistered = (clientId: string, payload: ClientRegisteredPayload): HandlerResult => {
+export const handleClientRegistered = (clientId: string, payload: ClientRegisteredPayload): HandlerResult => {
 
   const newClient = clientService.registerClient(payload);
 
@@ -78,7 +77,7 @@ const handleClientMoved = (clientId: string, payload: ClientMovedPayload): Handl
   }
 }
 
-const handleClientLeft = (clientId: string, payload: ClientLeftPayload): HandlerResult => {
+export const handleClientLeft = (clientId: string): HandlerResult => {
 
   const removedClient = clientService.removeClient(clientId);
 
@@ -135,7 +134,7 @@ export const handleMessage = (clientId: string, rawMessage: string): HandlerResu
         return handleClientMoved(clientId, payload)
 
       case 'CLIENT_LEFT':
-        return handleClientLeft(clientId, payload);
+        return handleClientLeft(clientId);
 
       default:
         return {
