@@ -12,7 +12,6 @@ const createErrorResponse = (error: string): WebSocketResponse => {
   };
 };
 
-//! Handlers específicos
 const handleAddItem = (
   payload: MessageParsed['payload']
 ): WebSocketResponse => {
@@ -79,7 +78,7 @@ const handleDeleteItem = (
   };
 };
 
-//! General Handler o controlador general
+//! General Handler
 export const handleMessage = (message: string): WebSocketResponse => {
   try {
     const jsonData: WebSocketMessage = JSON.parse(message);

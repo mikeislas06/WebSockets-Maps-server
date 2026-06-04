@@ -1,27 +1,76 @@
 //! Este es el objeto que se almacena por cada cliente
 export interface WebSocketData {
   clientId: string;
+  name: string;
+  color: string;
+  coords: Coords;
 }
 
-//! Este es el objeto que recibe el servidor
-export interface WebSocketMessage {
-  type: MessageType;
-  payload: unknown;
+export interface Coords {
+  lat: number;
+  lgn: number;
 }
 
-export type MessageType = 'PERSONAL_MESSAGE' | 'BROADCAST_MESSAGE';
-
-//! Este es el objeto que se envía al cliente
-export interface WebSocketResponse {
-  type: ResponseType;
-  payload: unknown;
+export interface ClientMarker {
+  clientId: string;
+  name: string;
+  color: string;
+  coords: Coords;
+  updatedAt: number;
 }
 
-export type ResponseType =
-  | 'ERROR'
-  | 'PERSONAL_RESPONSE_MESSAGE'
-  | 'BROADCAST_RESPONSE_MESSAGE'
-  | 'ITEM_ADDED'
-  | 'ITEM_UPDATED'
-  | 'ITEM_DELETED'
-  | 'ITEMS_LIST';
+export type IncommingWsMessage =
+  | {
+    type: 'CLIENT_REGISTERED';
+    payload: {
+      name: string;
+      color: string;
+      coords: Coords
+    }
+  }
+  | {
+    type: 'CLIENT_MOVED',
+    payload: {
+      coords: Coords;
+    }
+  }
+  | {
+    type: 'GET_CLIENTS',
+    payload?: any // TODO: Expand payload
+  }
+
+export type OutgoingWsMessage =
+  | {
+    type: 'ERROR',
+    payload: {
+      error: string
+    }
+  }
+  | {
+    type: 'WELCOME',
+    payload: {
+      clientId: string
+    }
+  }
+  | {
+    type: 'CLIENTS_STATE',
+    payload: ClientMarker[]
+  }
+  | {
+    type: 'CLIENT_JOINED',
+    payload: ClientMarker
+  }
+  | {
+    type: 'CLIENT_MOVED',
+    payload: {
+      clientId: string;
+      coords: Coords;
+      updatedAt: number
+    }
+  }
+  | {
+    type: "CLIENT_LEFT",
+    payload: {
+      clientId: string;
+    }
+  }
