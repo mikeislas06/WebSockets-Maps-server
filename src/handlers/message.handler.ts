@@ -1,87 +1,113 @@
 import {
   messageSchema,
-  type MessageParsed,
+  type ClientLeftPayload,
+  type ClientMovedPayload,
+  type ClientRegisteredPayload,
 } from '../schemas/websocket-message.schema';
-import { myService } from '../services/my-service.service';
-import type { WebSocketMessage, WebSocketResponse } from '../types';
+import { clientService } from '../services/clients.service';
+import type { IncommingWsMessage, OutgoingWsMessage } from '../types';
 
-const createErrorResponse = (error: string): WebSocketResponse => {
+interface HandlerResult {
+  personal: OutgoingWsMessage[];
+  broadcast: OutgoingWsMessage[];
+}
+
+const createErrorResponse = (error: string): OutgoingWsMessage => {
   return {
     type: 'ERROR',
     payload: { error: error },
   };
 };
 
-const handleAddItem = (
-  payload: MessageParsed['payload']
-): WebSocketResponse => {
-  if (!payload?.name) {
-    return createErrorResponse('Name is required');
-  }
-
-  const newItem = myService.add(payload.name);
-
+const handleGetClients = (): HandlerResult => {
   return {
-    type: 'ITEM_ADDED',
-    payload: newItem,
-  };
-};
-
-export const handleGetItems = (): WebSocketResponse => {
-  return {
-    type: 'ITEMS_LIST',
-    payload: myService.getAll(),
-  };
-};
-
-const handleUpdateItem = (
-  payload: MessageParsed['payload']
-): WebSocketResponse => {
-  if (!payload?.id) {
-    return createErrorResponse('Item ID is required');
+    broadcast: [],
+    personal: [{
+      type: 'CLIENTS_STATE',
+      payload: clientService.getAllClients()
+    }]
   }
+}
 
-  const updatedItem = myService.update(payload.id, {
-    name: payload.name,
-  });
+const handleClientRegistered = (clientId: string, payload: ClientRegisteredPayload): HandlerResult => {
 
-  if (!updatedItem) {
-    return createErrorResponse(`Item with id ${payload.id} not found`);
+  const newClient = clientService.registerClient(payload);
+
+  if ('error' in newClient) {
+    return { personal: [createErrorResponse(newClient.error)], broadcast: [] }
   }
 
   return {
-    type: 'ITEM_UPDATED',
-    payload: updatedItem,
-  };
-};
-
-const handleDeleteItem = (
-  payload: MessageParsed['payload']
-): WebSocketResponse => {
-  if (!payload?.id) {
-    return createErrorResponse(`Item with id ${payload?.id} not found`);
+    broadcast: [{
+      type: "CLIENT_JOINED",
+      payload: newClient
+    }],
+    personal: [
+      {
+        type: "WELCOME",
+        payload: newClient
+      },
+      {
+        type: "CLIENTS_STATE",
+        payload: clientService.getAllClients().filter(client => client.clientId !== clientId)
+      }
+    ]
   }
+}
 
-  const deleted = myService.delete(payload.id);
+const handleClientMoved = (clientId: string, payload: ClientMovedPayload): HandlerResult => {
 
-  if (!deleted) {
-    return createErrorResponse(
-      `Item with id ${payload.id} not found or can't be deleted`
-    );
+  const updatedClient = clientService.clientMoved(clientId, payload);
+
+  if ('error' in updatedClient) {
+    return { personal: [createErrorResponse(updatedClient.error)], broadcast: [] }
   }
 
   return {
-    type: 'ITEM_DELETED',
-    payload: {
-      id: payload.id,
-    },
-  };
-};
+    broadcast: [
+      {
+        type: 'CLIENT_MOVED',
+        payload: {
+          clientId: clientId,
+          coords: updatedClient.coords,
+          updatedAt: updatedClient.updatedAt
+        }
+      }
+    ],
+    personal: []
+  }
+}
+
+const handleClientLeft = (clientId: string, payload: ClientLeftPayload): HandlerResult => {
+
+  const removedClient = clientService.removeClient(clientId);
+
+  if (removedClient) {
+    return {
+      broadcast: [
+        {
+          type: 'CLIENT_LEFT',
+          payload: {
+            clientId: clientId
+          }
+        }
+      ],
+      personal: []
+    }
+  }
+
+  return {
+    broadcast: [],
+    personal: []
+  }
+
+}
+
 
 //! General Handler
-export const handleMessage = (message: string): WebSocketResponse => {
+export const handleMessage = (clientId: string, rawMessage: string): HandlerResult => {
   try {
-    const jsonData: WebSocketMessage = JSON.parse(message);
+    const jsonData: unknown = JSON.parse(rawMessage);
     const parsedResult = messageSchema.safeParse(jsonData);
 
     if (!parsedResult.success) {
@@ -90,25 +116,38 @@ export const handleMessage = (message: string): WebSocketResponse => {
         .map((issue) => issue.message)
         .join(', ');
 
-      return createErrorResponse(`Validation error ${errorMessage}`);
+      return {
+        broadcast: [],
+        personal: [createErrorResponse(`Validation error ${errorMessage}`)],
+      }
     }
 
     const { type, payload } = parsedResult.data;
 
     switch (type) {
-      case 'ADD_ITEM':
-        return handleAddItem(payload);
+      case 'GET_CLIENTS':
+        return handleGetClients();
 
-      case 'UPDATE_ITEM':
-        return handleUpdateItem(payload);
+      case 'CLIENT_REGISTERED':
+        return handleClientRegistered(clientId, payload)
 
-      case 'DELETE_ITEM':
-        return handleDeleteItem(payload);
+      case 'CLIENT_MOVED':
+        return handleClientMoved(clientId, payload)
+
+      case 'CLIENT_LEFT':
+        return handleClientLeft(clientId, payload);
 
       default:
-        return createErrorResponse(`Unknown message type: ${type}`);
+        return {
+          broadcast: [],
+          personal: [createErrorResponse(`Unknown message type: ${type}`)]
+        }
     }
   } catch (error) {
-    return createErrorResponse(`Validation error`);
+    console.log({ error });
+    return {
+      broadcast: [],
+      personal: [createErrorResponse(`Unkown error found`)],
+    }
   }
 };

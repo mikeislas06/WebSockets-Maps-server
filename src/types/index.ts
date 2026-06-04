@@ -8,7 +8,7 @@ export interface WebSocketData {
 
 export interface Coords {
   lat: number;
-  lgn: number;
+  lng: number;
 }
 
 export interface ClientMarker {
