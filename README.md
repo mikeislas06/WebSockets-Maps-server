@@ -1,45 +1,85 @@
-## WebSocket Server - Partidos Políticos
+# WebSockets Maps Application — Server
 
-### Ejecutar en dev
+[![Bun](https://img.shields.io/badge/Runtime-Bun-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org)
+[![Zod](https://img.shields.io/badge/Validation-Zod-3E67B1?style=flat&logo=zod&logoColor=white)](https://zod.dev/)
 
-1. Clonar proyecto
-2. Ejecutar `bun install`
-3. Crear `.env` basado en `.env.template`
-4. Ejecutar `bun run dev`
+The backend for the WebSockets Maps Application — a high-performance WebSocket server built with Bun that broadcasts real-time location and connection events to all clients.
 
-### Probar en el navegador
+> The client is in a separate repository: [WebSockets-Maps-client](https://github.com/mikeislas06/WebSockets-Maps-client).
 
-1. Abrir el archivo `http://localhost:3200` en el navegador
-2. En la consola crear el mensaje así:
+## Table of Contents
 
-```javascript
-const message = {
-  type: 'ALGUN_TIPO_DE_MENSAJE',
-  payload: {
-    id: 'un-identificador-de-un-item',
-  },
-};
+- [Technologies](#technologies)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Scripts](#scripts)
+- [Project Structure](#project-structure)
+
+## Technologies
+
+- **Runtime & WebSockets:** Bun
+- **Language:** TypeScript
+- **Validation:** Zod
+- **Architecture:** Class-based stores and service handlers
+
+## Features
+
+- High-performance, native WebSocket handling using Bun's built-in server
+- Message payload validation using Zod schemas
+- Centralized state management for all connected clients and their coordinates
+- Structured message handling for client joins, movements, and disconnects
+
+## Prerequisites
+
+- [Bun](https://bun.sh/) installed locally
+- The client running locally or deployed (see [WebSockets-Maps-client](https://github.com/mikeislas06/WebSockets-Maps-client))
+
+## Quick Start
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/mikeislas06/WebSockets-Maps-server.git
+cd WebSockets-Maps-server
 ```
 
-3. Usar el objeto `socket` para enviar el mensaje
+2. Install dependencies:
 
-```javascript
-socket.send(JSON.stringify(message));
+```bash
+bun install
 ```
 
-4. Ver el resultado en la consola del navegador
+3. Start the development server (with hot reload):
 
-## Documentación
+```bash
+bun run dev
+```
 
-A continuación se enumeran los **tipos de mensajes** (`MessageType`) que el servidor WebSocket acepta, junto con el payload esperado para cada uno:
+The server will start listening for WebSocket connections (default on port 3000).
 
-Ejemplo de mensaje:
+## Scripts
 
-```javascript
-const message = {
-  type: 'ALGUN_TIPO_DE_MENSAJE',
-  payload: {
-    id: 'un-identificador-de-un-item',
-  },
-};
+| Script          | Description                                   |
+| --------------- | --------------------------------------------- |
+| `bun run dev`   | Start server with hot-reloading               |
+| `bun run start` | Start server for production                   |
+
+## Project Structure
+
+```
+server/
+├── public/               # Public assets (e.g., fallback HTML)
+├── src/                  # Source code
+│   ├── handlers/         # Message and event handlers
+│   ├── schemas/          # Zod validation schemas
+│   ├── services/         # Business logic services
+│   ├── store/            # In-memory data store for connected clients
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Helper utilities (e.g., UUID generation)
+│   ├── index.ts          # Server entry point
+│   └── server.ts         # Bun server configuration and WebSocket setup
+├── package.json          # Project dependencies and scripts
+└── tsconfig.json         # TypeScript configuration
 ```
