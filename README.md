@@ -6,6 +6,8 @@
 
 The backend for the WebSockets Maps Application — a high-performance WebSocket server built with Bun that broadcasts real-time location and connection events to all clients.
 
+**🚀 Live Demo:** [https://web-sockets-maps.vercel.app/](https://web-sockets-maps.vercel.app/)
+
 > The client is in a separate repository: [WebSockets-Maps-client](https://github.com/mikeislas06/WebSockets-Maps-client).
 
 ## Table of Contents
