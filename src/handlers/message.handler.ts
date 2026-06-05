@@ -110,7 +110,6 @@ export const handleMessage = (clientId: string, rawMessage: string): HandlerResu
     const parsedResult = messageSchema.safeParse(jsonData);
 
     if (!parsedResult.success) {
-      console.log(parsedResult.error);
       const errorMessage = parsedResult.error.issues
         .map((issue) => issue.message)
         .join(', ');

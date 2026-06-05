@@ -55,13 +55,11 @@
       );
 
       socket.onopen = () => {
-        console.log('WebSocket conectado');
         messageForm.style.display = 'block';
         status.textContent = 'Conectado';
       };
 
       socket.onclose = () => {
-        console.log('WebSocket desconectado');
         messageForm.style.display = 'none';
         status.textContent = 'Desconectado';
       };
@@ -71,7 +69,6 @@
       };
 
       socket.onmessage = (event) => {
-        // console.log(event.data);
         showMessage(event.data);
       };
 
