@@ -15,12 +15,14 @@ export const createServer = () => {
 
     fetch(req, server) {
 
-      const cookies = new Bun.CookieMap(req.headers.get('cookie')!)
+      const cookies = new Bun.CookieMap(req.headers.get('cookie') || '')
+      const url = new URL(req.url);
 
       const clientId = generateUuid();
-      const name = cookies.get('name');
-      const color = cookies.get('color') || 'gray';
-      const coords = cookies.get('coords') ? JSON.parse(cookies.get('coords')!) : null;
+      const name = url.searchParams.get('name') || cookies.get('name');
+      const color = url.searchParams.get('color') || cookies.get('color') || 'gray';
+      const coordsStr = url.searchParams.get('coords') || cookies.get('coords');
+      const coords = coordsStr ? JSON.parse(coordsStr) : null;
 
       if (!name || !coords) {
         return new Response("Name and coords are required", {
